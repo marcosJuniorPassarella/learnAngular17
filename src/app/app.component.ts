@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
+import { of } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { InputTransformComponent } from './components/input-transform/input-transform.component';
 
 export interface User {
@@ -33,7 +35,8 @@ export interface User {
   `,
   styleUrls: [],
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
+  destroyedRef = inject(DestroyRef);
   showUser = 'true';
   renderBlock = false;
   title = 'learnAngular17';
@@ -43,4 +46,11 @@ export class AppComponent {
     { age: '40', name: 'Carlos', profession: 'Scrum Master', id: '789' },
     { age: '30', name: 'Maria', profession: 'UX Designer', id: '123' },
   ];
+  userDatas$ = of(this.userDatasList);
+
+  ngOnInit(): void {
+    this.userDatas$.pipe(takeUntilDestroyed(this.destroyedRef)).subscribe({
+      next: (response) => console.log('User Datas in Observable', response),
+    });
+  }
 }
